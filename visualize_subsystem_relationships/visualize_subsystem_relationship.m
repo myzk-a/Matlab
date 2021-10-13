@@ -39,13 +39,14 @@ for i = 1:length(subsystem_list)
 end
 
 %% モデルの依存関係を可視化する
-A = zeros(length(subsystem_relationship_list), length(subsystem_relationship_list));
+A = zeros(length(subsystem_relationship_list), length(subsystem_relationship_list)); %隣接行列
 
-names = cell(1, length(subsystem_relationship_list));
+names = cell(1, length(subsystem_relationship_list)); %ノード名のリスト
 for i = 1:length(subsystem_relationship_list)
     names{i} = char(subsystem_relationship_list{i}(1));
 end
 
+% subsystem_relationship_listから隣接行列を作成する
 for i = 1:length(subsystem_relationship_list)
     list = subsystem_relationship_list{i};
     if length(list) == 1
