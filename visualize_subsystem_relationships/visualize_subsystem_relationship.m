@@ -14,14 +14,29 @@ open_system(model_name);
 %   string配列の要素が一つのときは、接続先のサブシステムがないことを表す
 subsystem_list = find_system(target_system, 'SearchDepth', '1', 'BlockType', 'SubSystem');
 
-subsystem_relationship_list = cell(1, length(subsystem_list)-1);
+% Compare To Constantブロックをsubsystem_listから除く
+cnt = 0;
+compare_to_constant =['Compare' newline 'To Constant'];
+for i = 1:length(subsystem_list)
+    if contains(get_param(subsystem_list{i}, 'Name'), compare_to_constant)
+        cnt = cnt+1;
+    end
+end
+
+subsystem_relationship_list = cell(1, length(subsystem_list)-1-cnt);
 index = 1;
 for i = 1:length(subsystem_list)
     if strcmp(subsystem_list(i), target_system)
         continue;
     end
-    subsystem_name = string(get_param(subsystem_list{i}, 'Name'));
-    input = [subsystem_name];
+    
+     subsystem_name = get_param(subsystem_list{i}, 'Name');
+    if contains(subsystem_name, compare_to_constant)
+        continue;
+    end
+    
+    subsystem_name = string(subsystem_name);
+    input = subsystem_name;
     ph = get_param(subsystem_list{i}, 'PortHandles');
     for j = 1:length(ph.Outport)
         line = get_param(ph.Outport(j), 'Line');
@@ -69,7 +84,12 @@ for i = 1:length(subsystem_relationship_list)
 end
 
 G = digraph(A,names);
-plot(G)
+p = plot(G, 'Layout','force');
+
+bins = conncomp(G);
+p.MarkerSize = 7;
+p.NodeCData = bins;
+colormap(hsv(10))
 
 %% 接続先のサブシステム名を取得する
 function subsystem_list = get_source_subsystem_list(block, input_list)
