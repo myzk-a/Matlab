@@ -40,14 +40,13 @@ for i = 1:length(subsystem_list)
 end
 
 %% モデルの依存関係を可視化する
-A = zeros(length(subsystem_relationship_list), length(subsystem_relationship_list)); %隣接行列
+A = zeros(length(subsystem_relationship_list), length(subsystem_relationship_list));
 
-names = cell(1, length(subsystem_relationship_list)); %ノード名のリスト
+names = cell(1, length(subsystem_relationship_list));
 for i = 1:length(subsystem_relationship_list)
     names{i} = char(subsystem_relationship_list{i}(1));
 end
 
-% subsystem_relationship_listから隣接行列を作成する
 for i = 1:length(subsystem_relationship_list)
     list = subsystem_relationship_list{i};
     if length(list) == 1
@@ -70,14 +69,23 @@ for i = 1:length(subsystem_relationship_list)
 end
 
 G = digraph(A,names);
-p = plot(G, 'Layout','force');
+p = plot(G, 'Layout','layered');
 
 bins = conncomp(G);
 p.MarkerSize = 7;
 p.NodeCData = bins;
-colormap(hsv(10))
+colormap(hsv(10));
 
-%% 接続先のサブシステム名を取得する
+if isdag(G) == true
+    N = toposort(G);
+    for i = 1:length(N)
+        disp (names(N(i)));
+    end
+else 
+    disp 'This graph has cycles.'
+end
+
+%% function
 function subsystem_list = get_source_subsystem_list(block, input_list)
     block_type = get_param(block, 'BlockType');
     %ブロックタイプを取得し、Subsystemの場合はsubsystem_listにサブシステム名を追加し、returnする
